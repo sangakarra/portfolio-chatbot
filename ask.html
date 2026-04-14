@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASK SKR // CLASSIFIED INTEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#000;--blue:#00d4ff;--blue2:#0090cc;
+  --red:#ff003c;--white:#e8f4f8;--muted:#4a7a8a;
+  --card:rgba(0,8,18,0.85);--border:rgba(0,212,255,0.18);
+  --orb:'Orbitron',sans-serif;--mono:'Share Tech Mono',monospace;
+}
+html,body{height:100%}
+body{
+  background:#000;color:var(--white);
+  font-family:var(--mono);font-size:15px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+}
+canvas#gc{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* NAV */
+nav{
+  position:relative;z-index:10;
+  padding:0 2rem;
+  background:rgba(0,0,0,0.92);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.ni{
+  max-width:900px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:52px;
+}
+.nid{font-family:var(--orb);font-size:10px;color:var(--blue);letter-spacing:0.15em}
+.nback{
+  font-family:var(--orb);font-size:10px;color:var(--muted);
+  text-decoration:none;letter-spacing:0.1em;
+  transition:color 0.2s;
+}
+.nback:hover{color:var(--blue)}
+.nst{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+
+/* MAIN LAYOUT */
+.chat-wrap{
+  flex:1;overflow:hidden;
+  display:flex;flex-direction:column;
+  max-width:900px;width:100%;
+  margin:0 auto;padding:1.5rem 2rem;
+  position:relative;z-index:1;
+}
+
+/* HEADER */
+.chat-header{margin-bottom:1.25rem;flex-shrink:0}
+.ch-tag{
+  font-family:var(--orb);font-size:9px;color:var(--red);
+  border:1px solid rgba(255,0,60,0.3);
+  padding:3px 12px;letter-spacing:0.2em;
+  display:inline-block;margin-bottom:0.6rem;
+  text-shadow:0 0 8px rgba(255,0,60,0.3);
+}
+.ch-title{font-family:var(--orb);font-size:1.3rem;font-weight:700;color:var(--white);margin-bottom:0.25rem}
+.ch-sub{font-size:11px;color:var(--muted);letter-spacing:0.05em}
+
+/* MESSAGES */
+.messages{
+  flex:1;overflow-y:auto;
+  display:flex;flex-direction:column;gap:1rem;
+  padding-right:4px;margin-bottom:1rem;
+}
+.messages::-webkit-scrollbar{width:3px}
+.messages::-webkit-scrollbar-track{background:transparent}
+.messages::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.2);border-radius:2px}
+
+.msg{display:flex;flex-direction:column;gap:4px;max-width:80%}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg.bot{align-self:flex-start;align-items:flex-start}
+
+.msg-label{font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-bottom:2px}
+
+.msg-bubble{
+  padding:0.85rem 1.1rem;
+  border-radius:2px;
+  font-size:13px;line-height:1.65;
+  position:relative;
+}
+.msg.user .msg-bubble{
+  background:rgba(0,212,255,0.1);
+  border:1px solid rgba(0,212,255,0.25);
+  color:var(--white);
+}
+.msg.bot .msg-bubble{
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--muted);
+}
+.msg.bot .msg-bubble::before,
+.msg.bot .msg-bubble::after{
+  content:'';position:absolute;width:7px;height:7px;
+  border-color:var(--blue);border-style:solid;
+}
+.msg.bot .msg-bubble::before{top:-1px;left:-1px;border-width:1px 0 0 1px}
+.msg.bot .msg-bubble::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+
+/* TYPING INDICATOR */
+.typing{display:flex;gap:4px;align-items:center;padding:0.85rem 1.1rem}
+.typing span{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--blue);opacity:0.4;
+  animation:bounce 1.2s infinite;
+}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-6px);opacity:1}}
+
+/* SUGGESTIONS */
+.suggestions{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-bottom:1rem;flex-shrink:0;
+}
+.sug{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  background:var(--card);border:1px solid var(--border);
+  padding:6px 12px;cursor:pointer;
+  transition:all 0.2s;letter-spacing:0.03em;
+  border-radius:2px;
+}
+.sug:hover{color:var(--blue);border-color:rgba(0,212,255,0.4)}
+
+/* INPUT AREA */
+.input-area{
+  display:flex;gap:10px;align-items:flex-end;
+  flex-shrink:0;
+  background:var(--card);
+  border:1px solid var(--border);
+  padding:0.75rem 1rem;
+  position:relative;
+}
+.input-area::before,.input-area::after{
+  content:'';position:absolute;width:8px;height:8px;
+  border-color:var(--blue);border-style:solid;
+}
+.input-area::before{top:-1px;left:-1px;border-width:1px 0 0 1px}
+.input-area::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+
+#msg-input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--white);font-family:var(--mono);font-size:13px;
+  resize:none;line-height:1.5;max-height:100px;
+  scrollbar-width:none;
+}
+#msg-input::placeholder{color:var(--muted)}
+#msg-input::-webkit-scrollbar{display:none}
+
+#send-btn{
+  font-family:var(--orb);font-size:10px;
+  background:var(--blue);color:#000;
+  border:none;padding:8px 18px;
+  cursor:pointer;letter-spacing:0.1em;
+  font-weight:700;flex-shrink:0;
+  transition:all 0.2s;
+}
+#send-btn:hover{background:#fff;box-shadow:0 0 16px rgba(0,212,255,0.4)}
+#send-btn:disabled{background:rgba(0,212,255,0.2);color:var(--muted);cursor:not-allowed;box-shadow:none}
+
+/* WELCOME MSG */
+.welcome{
+  align-self:flex-start;
+  background:var(--card);border:1px solid var(--border);
+  padding:1.25rem 1.5rem;max-width:90%;
+  position:relative;
+}
+.welcome::before,.welcome::after{
+  content:'';position:absolute;width:8px;height:8px;
+  border-color:var(--blue);border-style:solid;
+}
+.welcome::before{top:-1px;left:-1px;border-width:1px 0 0 1px}
+.welcome::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+.welcome-title{font-family:var(--orb);font-size:12px;color:var(--blue);margin-bottom:0.5rem;letter-spacing:0.1em}
+.welcome-text{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* BACKEND URL notice */
+#status-bar{
+  font-size:10px;color:var(--muted);
+  text-align:center;padding:4px;
+  letter-spacing:0.05em;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+
+<canvas id="gc"></canvas>
+
+<nav>
+  <div class="ni">
+    <span class="nid">SKR // INTEL TERMINAL</span>
+    <a href="index.html" class="nback">← BACK TO DOSSIER</a>
+    <div class="nst"><div class="dot"></div><span>AI ONLINE</span></div>
+  </div>
+</nav>
+
+<div class="chat-wrap">
+  <div class="chat-header">
+    <span class="ch-tag">CLASSIFIED // AI REPRESENTATIVE</span>
+    <h1 class="ch-title">Ask Sangarshan</h1>
+    <p class="ch-sub">// Ask anything about his experience, skills, or availability</p>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="welcome">
+      <p class="welcome-title">// AGENT SKR-001 ONLINE</p>
+      <p class="welcome-text">Hello. I'm Sangarshan's AI representative. I can answer your questions about his experience, technical skills, projects, and availability. What would you like to know?</p>
+    </div>
+  </div>
+
+  <div class="suggestions" id="suggestions">
+    <div class="sug" onclick="sendSuggestion(this)">What is his experience with Kafka?</div>
+    <div class="sug" onclick="sendSuggestion(this)">Is he open to remote work?</div>
+    <div class="sug" onclick="sendSuggestion(this)">Tell me about his work at CSX.</div>
+    <div class="sug" onclick="sendSuggestion(this)">What are his strongest skills?</div>
+    <div class="sug" onclick="sendSuggestion(this)">Does he have AI or ML experience?</div>
+    <div class="sug" onclick="sendSuggestion(this)">How can I contact him?</div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="msg-input" placeholder="// Type your question here..." rows="1"></textarea>
+    <button id="send-btn" onclick="sendMessage()">SEND</button>
+  </div>
+
+  <div id="status-bar">CONNECTED TO SKR INTEL BACKEND</div>
+</div>
+
+<script>
+const BACKEND_URL = "http://localhost:5001";
+const messages = document.getElementById("messages");
+const input = document.getElementById("msg-input");
+const btn = document.getElementById("send-btn");
+const statusBar = document.getElementById("status-bar");
+
+// Auto-resize textarea
+input.addEventListener("input", () => {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 100) + "px";
+});
+
+// Send on Enter (Shift+Enter for newline)
+input.addEventListener("keydown", e => {
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+function addMessage(text, role){
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  const label = document.createElement("div");
+  label.className = "msg-label";
+  label.textContent = role === "user" ? "// YOU" : "// AGENT SKR-001";
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  bubble.textContent = text;
+  div.appendChild(label);
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+function showTyping(){
+  const div = document.createElement("div");
+  div.className = "msg bot";
+  div.id = "typing";
+  const label = document.createElement("div");
+  label.className = "msg-label";
+  label.textContent = "// AGENT SKR-001";
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble typing";
+  bubble.innerHTML = "<span></span><span></span><span></span>";
+  div.appendChild(label);
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTyping(){
+  const t = document.getElementById("typing");
+  if(t) t.remove();
+}
+
+function sendSuggestion(el){
+  input.value = el.textContent;
+  document.getElementById("suggestions").style.display = "none";
+  sendMessage();
+}
+
+async function sendMessage(){
+  const text = input.value.trim();
+  if(!text) return;
+
+  input.value = "";
+  input.style.height = "auto";
+  btn.disabled = true;
+  document.getElementById("suggestions").style.display = "none";
+
+  addMessage(text, "user");
+  showTyping();
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/chat`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: text})
+    });
+    const data = await res.json();
+    removeTyping();
+    if(data.reply){
+      addMessage(data.reply, "bot");
+    } else {
+      addMessage("// TRANSMISSION ERROR — please try again.", "bot");
+    }
+  } catch(err) {
+    removeTyping();
+    addMessage("// UNABLE TO REACH BACKEND — make sure the server is running.", "bot");
+    statusBar.textContent = "⚠ BACKEND OFFLINE — deploy to Render to go live";
+    statusBar.style.color = "#ff003c";
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+/* GRID */
+(function(){
+  const c = document.getElementById("gc");
+  const ctx = c.getContext("2d");
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+  resize(); window.addEventListener("resize", resize);
+  const S = 52;
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.strokeStyle="rgba(0,212,255,0.04)";ctx.lineWidth=0.5;
+    for(let x=0;x<c.width;x+=S){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}
+    for(let y=0;y<c.height;y+=S){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
