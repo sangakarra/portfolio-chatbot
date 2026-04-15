@@ -23,7 +23,7 @@ Built with Python, Flask, and Google Gemini API.
 5. Run locally
    python app.py
 
-   Server runs at http://localhost:5001
+   Server runs at http://localhost:5000
 
 ## API
 
