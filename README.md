@@ -18,12 +18,12 @@ Built with Python, Flask, and Google Gemini API.
 
 4. Add your API key
    cp .env.example .env
-   # Edit .env and add your Gemini API key
+   # Edit .env and add your Groq API key
 
 5. Run locally
    python app.py
 
-   Server runs at http://localhost:5000
+   Server runs at http://localhost:5001
 
 ## API
 
@@ -34,4 +34,4 @@ Response: { "reply": "Yes, Sangarshan has hands-on experience with Apache Kafka.
 ## Deployment
 
 Deployed on Render.com (free tier)
-Set GEMINI_API_KEY as an environment variable in Render dashboard — never commit .env to GitHub.
+Set GROQ_API_KEY as an environment variable in Render dashboard — never commit .env to GitHub.
