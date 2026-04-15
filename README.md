@@ -34,4 +34,4 @@ Response: { "reply": "Yes, Sangarshan has hands-on experience with Apache Kafka.
 ## Deployment
 
 Deployed on Render.com (free tier)
-Set GROQ_API_KEY as an environment variable in Render dashboard — never commit .env to GitHub.
+Set GEMINI_API_KEY as an environment variable in Render dashboard — never commit .env to GitHub.
