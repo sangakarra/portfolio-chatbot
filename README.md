@@ -18,7 +18,7 @@ Built with Python, Flask, and Google Gemini API.
 
 4. Add your API key
    cp .env.example .env
-   # Edit .env and add your Gemini API key
+   # Edit .env and add your Groq API key
 
 5. Run locally
    python app.py
