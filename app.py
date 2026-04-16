@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,7 +15,10 @@ CORS(app, origins=[
     "null"
 ])
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
+)
 
 SYSTEM_CONTEXT = """
 You are an AI assistant representing Sangarshan Reddy Karra in his personal portfolio.
@@ -45,10 +48,11 @@ SKILLS:
 - Languages: Python (primary, 8+ years), SQL/Oracle PL-SQL, Java, JavaScript
 - Data & Pipelines: Pandas, PySpark, Apache Kafka, ETL/ELT Workflows, MySQL, PostgreSQL
 - Cloud & Infrastructure: AWS (EC2, S3, boto3, KMS), Docker, GitHub Actions, Jenkins, Linux/RHEL
-- Backend & Systems: REST APIs, Multithreading, XML/XSD Parsing, OOP
+- Backend & Systems: REST APIs, Flask, Multithreading, XML/XSD Parsing, OOP
+- AI & LLM Tools: Prompt Engineering, LLM Application Development, OpenRouter
 - Monitoring: Zenoss, AWS CloudWatch
 - Testing: Unit Testing, TDD, Python unittest
-- Tools: Git, PyCharm
+- Tools: Git, GitHub Pages, PyCharm
 
 EXPERIENCE:
 
@@ -80,11 +84,11 @@ AVAILABILITY:
 - Open to remote, hybrid, or on-site in the United States
 
 PROJECTS:
+- AI Portfolio Chatbot: sangakarra.github.io/portfolio/ask.html
 - Portfolio website: sangakarra.github.io/portfolio
-- Building AI/ML projects — LLM-powered pipelines and AI agents coming soon
+- Building more AI/ML projects — LLM-powered pipelines and AI agents coming soon
 
-If asked something you don't know, say you don't have that information and suggest
-the recruiter reach out at karrasangarshanreddy@gmail.com.
+If asked something you don't know, suggest the recruiter reach out at karrasangarshanreddy@gmail.com.
 Never fabricate information. For salary questions, direct to Sangarshan directly.
 """
 
@@ -107,13 +111,12 @@ def chat():
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openrouter/auto",
             messages=[
                 {"role": "system", "content": SYSTEM_CONTEXT},
                 {"role": "user", "content": user_message}
             ],
             max_tokens=500,
-            temperature=0.7
         )
         reply = response.choices[0].message.content.strip()
         return jsonify({"reply": reply})
