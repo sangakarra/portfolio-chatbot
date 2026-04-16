@@ -1,7 +1,7 @@
 import os
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,10 +15,8 @@ CORS(app, origins=[
     "null"
 ])
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.environ.get("OPENROUTER_API_KEY"),
-)
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 SYSTEM_CONTEXT = """
 You are an AI assistant representing Sangarshan Reddy Karra in his personal portfolio.
@@ -86,7 +84,6 @@ AVAILABILITY:
 PROJECTS:
 - AI Portfolio Chatbot: sangakarra.github.io/portfolio/ask.html
 - Portfolio website: sangakarra.github.io/portfolio
-- Building more AI/ML projects — LLM-powered pipelines and AI agents coming soon
 
 If asked something you don't know, suggest the recruiter reach out at karrasangarshanreddy@gmail.com.
 Never fabricate information. For salary questions, direct to Sangarshan directly.
@@ -110,15 +107,26 @@ def chat():
         return jsonify({"error": "Message too long"}), 400
 
     try:
-        response = client.chat.completions.create(
-            model="openrouter/auto",
-            messages=[
-                {"role": "system", "content": SYSTEM_CONTEXT},
-                {"role": "user", "content": user_message}
-            ],
-            max_tokens=500,
+        response = requests.post(
+            OPENROUTER_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://sangakarra.github.io/portfolio",
+                "X-Title": "SKR Portfolio Chatbot"
+            },
+            json={
+                "model": "openrouter/auto",
+                "messages": [
+                    {"role": "system", "content": SYSTEM_CONTEXT},
+                    {"role": "user", "content": user_message}
+                ],
+                "max_tokens": 500
+            },
+            timeout=30
         )
-        reply = response.choices[0].message.content.strip()
+        result = response.json()
+        reply = result["choices"][0]["message"]["content"].strip()
         return jsonify({"reply": reply})
     except Exception as e:
         return jsonify({"error": "Failed to generate response", "details": str(e)}), 500
